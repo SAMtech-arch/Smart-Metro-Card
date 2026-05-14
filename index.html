@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Metro Station Login</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f5f5f5; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container { 
+      background: white; 
+      padding: 30px; 
+      border-radius: 10px; 
+      box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+      width: 320px;
+    }
+    h2 { 
+      text-align: center; 
+      color: #2c3e50; 
+      margin-bottom: 20px;
+    }
+    input, select, button { 
+      width: 100%; 
+      padding: 12px; 
+      margin: 8px 0; 
+      box-sizing: border-box;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button { 
+      background: #3498db; 
+      color: white; 
+      border: none; 
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    button:hover { background: #2980b9; }
+    button:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
+    }
+    .toggle { 
+      text-align: center; 
+      margin-top: 15px; 
+      cursor: pointer; 
+      color: #3498db;
+      text-decoration: underline;
+    }
+    .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    select {
+      background-color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 id="formTitle">Login</h2>
+    
+    <!-- Login Form -->
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" required />
+      <input type="password" id="password" placeholder="Password" required />
+      <div id="loginError" class="error-message"></div>
+      <button type="submit" id="loginBtn">Login</button>
+    </form>
+
+    <!-- Registration Form -->
+    <form id="registerForm" style="display:none">
+      <input type="text" id="username" placeholder="Username" required />
+      <input type="text" id="name" placeholder="Full Name" required />
+      <input type="email" id="regEmail" placeholder="Email" required />
+      <input type="password" id="regPassword" placeholder="Password" required minlength="6" />
+      <select id="role">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+      <div id="registerError" class="error-message"></div>
+      <button type="submit" id="registerBtn">Register</button>
+    </form>
+
+    <div class="toggle" id="toggleLink">Don't have an account? Register</div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const toggleLink = document.getElementById('toggleLink');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const formTitle = document.getElementById('formTitle');
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const loginError = document.getElementById('loginError');
+    const registerError = document.getElementById('registerError');
+
+    // Toggle between login and register forms
+    function toggleForms() {
+      const isLoginVisible = loginForm.style.display !== 'none';
+      
+      loginForm.style.display = isLoginVisible ? 'none' : 'block';
+      registerForm.style.display = isLoginVisible ? 'block' : 'none';
+      formTitle.textContent = isLoginVisible ? 'Register' : 'Login';
+      toggleLink.textContent = isLoginVisible ? 'Already have an account? Login' : "Don't have an account? Register";
+      
+      // Clear errors when switching forms
+      loginError.textContent = '';
+      registerError.textContent = '';
+    }
+
+    toggleLink.addEventListener('click', toggleForms);
+
+    // Handle login form submission
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginBtn.disabled = true;
+      loginError.textContent = '';
+      
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch('http://localhost:5001/api/users/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Store user data
+          localStorage.setItem('token', data.token || '');
+          localStorage.setItem('role', data.user?.role || 'user');
+          localStorage.setItem('email', email);
+          localStorage.setItem('username', data.user?.username || '');
+          
+          // Redirect to dashboard
+          window.location.href = data.user?.role === 'admin' ? 'admin-dashboard.html' : 'dashboard.html';
+        } else {
+          loginError.textContent = data.message || 'Invalid credentials';
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        loginError.textContent = 'Network error. Please try again.';
+      } finally {
+        loginBtn.disabled = false;
+      }
+    });
+
+    // Handle registration form submission
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      registerBtn.disabled = true;
+      registerError.textContent = '';
+      
+      const username = document.getElementById('username').value.trim();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const role = document.getElementById('role').value;
+
+      // Basic client-side validation
+      if (!username) {
+        registerError.textContent = 'Username is required';
+        registerBtn.disabled = false;
+        return;
+      }
+      
+      if (password.length < 6) {
+        registerError.textContent = 'Password must be at least 6 characters';
+        registerBtn.disabled = false;
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:5001/api/users/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, name, email, password, role }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Store user data
+          localStorage.setItem('token', data.token || '');
+          localStorage.setItem('role', role);
+          localStorage.setItem('email', email);
+          localStorage.setItem('username', username);
+          
+          alert('Registration successful!');
+          window.location.href = 'dashboard.html';
+        } else {
+          registerError.textContent = data.message || 'Registration failed. Please try again.';
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        registerError.textContent = 'Network error. Please try again.';
+      } finally {
+        registerBtn.disabled = false;
+      }
+    });
+
+    // Real-time validation for username
+    document.getElementById('username').addEventListener('input', (e) => {
+      if (!e.target.value.trim()) {
+        e.target.style.borderColor = '#e74c3c';
+      } else {
+        e.target.style.borderColor = '#ddd';
+      }
+    });
+  </script>
+</body>
+</html>

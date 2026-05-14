@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metro Dashboard</title>
+  <style>
+    :root {
+      --primary: #3498db;
+      --secondary: #2ecc71;
+      --dark: #2c3e50;
+      --light: #ecf0f1;
+      --danger: #e74c3c;
+      --warning: #f39c12;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .dashboard {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: var(--dark);
+      color: white;
+      padding: 25px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+    }
+    
+    .balance-card {
+      background: white;
+      margin: 20px;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      text-align: center;
+      border-top: 5px solid var(--secondary);
+    }
+    
+    .balance-label {
+      font-size: 18px;
+      color: #7f8c8d;
+      margin-bottom: 10px;
+    }
+    
+    .balance-amount {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--dark);
+    }
+    
+    .section {
+      background: white;
+      margin: 20px;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .section-title {
+      color: var(--dark);
+      font-size: 22px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .section-title i {
+      color: var(--primary);
+    }
+    
+    .recharge-options {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .recharge-option {
+      flex: 1;
+      background: var(--light);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    .recharge-option:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .recharge-option.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .custom-amount {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid var(--light);
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      transition: border 0.3s;
+    }
+    
+    .custom-amount:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(41, 128, 185, 0.3);
+    }
+    
+    .station-select {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid var(--light);
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 15px center;
+      background-size: 15px;
+    }
+    
+    .station-select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .message {
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: none;
+    }
+    
+    .success {
+      background: rgba(46, 204, 113, 0.1);
+      color: var(--secondary);
+      border: 1px solid rgba(46, 204, 113, 0.3);
+    }
+    
+    .error {
+      background: rgba(231, 76, 60, 0.1);
+      color: var(--danger);
+      border: 1px solid rgba(231, 76, 60, 0.3);
+    }
+    
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .transaction-details {
+      flex: 1;
+    }
+    
+    .transaction-description {
+      font-weight: 500;
+      color: var(--dark);
+    }
+    
+    .transaction-date {
+      font-size: 12px;
+      color: #7f8c8d;
+      margin-top: 4px;
+    }
+    
+    .transaction-amount {
+      font-weight: 600;
+    }
+    
+    .transaction-amount.positive {
+      color: var(--secondary);
+    }
+    
+    .transaction-amount.negative {
+      color: var(--danger);
+    }
+    
+    #transactionsContainer {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .success-pulse {
+      animation: pulseSuccess 1s;
+    }
+    
+    @keyframes pulseSuccess {
+      0% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, 0); }
+    }
+    
+    @media (max-width: 600px) {
+      .recharge-options {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <div class="header">
+      <h1>Metro Dashboard</h1>
+    </div>
+    
+    <div class="balance-card">
+      <div class="balance-label">Current Balance</div>
+      <div class="balance-amount">₹<span id="balanceAmount">0</span></div>
+    </div>
+    
+    <div class="section" id="rechargeSection">
+      <div class="section-title">
+        <i>💰</i> Recharge Wallet
+      </div>
+      <div class="recharge-options">
+        <div class="recharge-option" onclick="selectRecharge(100)">₹100</div>
+        <div class="recharge-option" onclick="selectRecharge(500)">₹500</div>
+        <div class="recharge-option" onclick="selectRecharge(1000)">₹1000</div>
+      </div>
+      <input type="number" class="custom-amount" id="rechargeAmount" placeholder="Or enter custom amount" min="10">
+      <button class="btn btn-primary" onclick="rechargeWallet()">Recharge Wallet</button>
+      <div id="rechargeMessage" class="message"></div>
+    </div>
+    
+    <div class="section" id="entrySection">
+      <div class="section-title">
+        <i>🚉</i> Entry Station
+      </div>
+      <select class="station-select" id="entryStation">
+        <option value="">Select Entry Station</option>
+        <option value="MG Road">MG Road</option>
+        <option value="Jayanagar">Jayanagar</option>
+        <option value="Indiranagar">Indiranagar</option>
+        <option value="Koramangala">Koramangala</option>
+        <option value="Whitefield">Whitefield</option>
+      </select>
+      <button class="btn btn-primary" onclick="recordEntry()">Enter Station</button>
+      <div id="entryMessage" class="message"></div>
+    </div>
+    
+    <div class="section" id="exitSection">
+      <div class="section-title">
+        <i>🚪</i> Exit Station
+      </div>
+      <select class="station-select" id="exitStation">
+        <option value="">Select Exit Station</option>
+        <option value="MG Road">MG Road</option>
+        <option value="Jayanagar">Jayanagar</option>
+        <option value="Indiranagar">Indiranagar</option>
+        <option value="Koramangala">Koramangala</option>
+        <option value="Whitefield">Whitefield</option>
+      </select>
+      <button class="btn btn-primary" onclick="recordExit()">Exit Station</button>
+      <div id="exitMessage" class="message"></div>
+    </div>
+    
+    <div class="section">
+      <div class="section-title">
+        <i>📝</i> Transaction History
+      </div>
+      <div id="transactionsContainer">
+        <div class="transaction-item">
+          <div class="transaction-details">
+            <div class="transaction-description">Loading transactions...</div>
+            <div class="transaction-date">-</div>
+          </div>
+          <div class="transaction-amount">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load user data on page load
+    document.addEventListener('DOMContentLoaded', async () => {
+      await loadUserData();
+      await loadTransactions();
+      
+      const entryStation = localStorage.getItem('entryStation');
+      if (entryStation) {
+        document.getElementById('entryStation').value = entryStation;
+        document.getElementById('entryStation').disabled = true;
+      }
+    });
+
+    // Load user data
+    async function loadUserData() {
+      const email = localStorage.getItem('email');
+      if (!email) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:5001/api/users/${email}`);
+        if (!response.ok) throw new Error('Failed to fetch user data');
+        
+        const data = await response.json();
+        updateBalance(data.balance || 0);
+        localStorage.setItem('balance', data.balance || 0);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        const balance = localStorage.getItem('balance') || 0;
+        updateBalance(balance);
+        showMessage('error', 'Failed to load balance. Using cached data.', 'rechargeMessage');
+      }
+    }
+
+    // Update balance display
+    function updateBalance(amount) {
+      const balanceElement = document.getElementById('balanceAmount');
+      balanceElement.textContent = amount;
+      localStorage.setItem('balance', amount);
+      
+      // Animation
+      balanceElement.style.transform = 'scale(1.2)';
+      balanceElement.style.color = '#27ae60';
+      setTimeout(() => {
+        balanceElement.style.transform = 'scale(1)';
+        balanceElement.style.color = '';
+      }, 300);
+    }
+
+    // Load transactions
+    async function loadTransactions() {
+      const email = localStorage.getItem('email');
+      if (!email) return;
+
+      const container = document.getElementById('transactionsContainer');
+      container.innerHTML = '<div class="transaction-item">Loading transactions...</div>';
+
+      try {
+        const response = await fetch(`http://localhost:5001/api/users/${email}/transactions`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const transactions = await response.json();
+        container.innerHTML = '';
+
+        if (!transactions || transactions.length === 0) {
+          container.innerHTML = '<div class="transaction-item">No transactions found</div>';
+          return;
+        }
+
+        // Sort by date (newest first)
+        transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        transactions.forEach(transaction => {
+          const item = document.createElement('div');
+          item.className = 'transaction-item';
+          
+          item.innerHTML = `
+            <div class="transaction-details">
+              <div class="transaction-description">${transaction.description}</div>
+              <div class="transaction-date">
+                ${new Date(transaction.date).toLocaleDateString()} 
+                ${new Date(transaction.date).toLocaleTimeString()}
+              </div>
+            </div>
+            <div class="transaction-amount ${transaction.amount > 0 ? 'positive' : 'negative'}">
+              ${transaction.amount > 0 ? '+' : ''}₹${Math.abs(transaction.amount)}
+            </div>
+          `;
+          
+          container.appendChild(item);
+        });
+      } catch (error) {
+        console.error('Failed to load transactions:', error);
+        container.innerHTML = `
+          <div class="transaction-item error">
+            Failed to load transactions. ${error.message}
+          </div>
+        `;
+      }
+    }
+
+    // Recharge functions
+    let selectedRechargeAmount = 0;
+    
+    function selectRecharge(amount) {
+      selectedRechargeAmount = amount;
+      document.getElementById('rechargeAmount').value = amount;
+      
+      document.querySelectorAll('.recharge-option').forEach(option => {
+        option.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    async function rechargeWallet() {
+      const amountInput = document.getElementById('rechargeAmount');
+      const amount = parseInt(amountInput.value);
+      
+      if (isNaN(amount) || amount < 10) {
+        showMessage('error', 'Minimum recharge is ₹10', 'rechargeMessage');
+        amountInput.focus();
+        return;
+      }
+
+      const rechargeBtn = document.querySelector('#rechargeSection .btn-primary');
+      const originalBtnText = rechargeBtn.textContent;
+      rechargeBtn.disabled = true;
+      rechargeBtn.textContent = 'Processing...';
+
+      try {
+        const email = localStorage.getItem('email');
+        if (!email) {
+          window.location.href = 'index.html';
+          return;
+        }
+
+        const response = await fetch('http://localhost:5001/api/users/recharge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, amount })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          updateBalance(data.balance);
+          await loadTransactions();
+          showMessage('success', `Successfully recharged ₹${amount}`, 'rechargeMessage');
+          
+          amountInput.value = '';
+          document.querySelectorAll('.recharge-option').forEach(option => {
+            option.classList.remove('active');
+          });
+          
+          rechargeBtn.classList.add('success-pulse');
+          setTimeout(() => rechargeBtn.classList.remove('success-pulse'), 1000);
+        } else {
+          throw new Error(data.message || 'Recharge failed');
+        }
+      } catch (error) {
+        console.error('Recharge error:', error);
+        showMessage('error', error.message || 'Network error. Please try again.', 'rechargeMessage');
+        amountInput.style.borderColor = 'var(--danger)';
+      } finally {
+        rechargeBtn.disabled = false;
+        rechargeBtn.textContent = originalBtnText;
+      }
+    }
+
+    // Entry/Exit functions
+    async function recordEntry() {
+      const station = document.getElementById('entryStation').value;
+      if (!station) {
+        showMessage('error', 'Please select entry station', 'entryMessage');
+        return;
+      }
+
+      const entryBtn = document.querySelector('#entrySection .btn-primary');
+      const originalBtnText = entryBtn.textContent;
+      entryBtn.disabled = true;
+      entryBtn.textContent = 'Processing...';
+
+      try {
+        const response = await fetch('http://localhost:5001/api/users/entry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: localStorage.getItem('email'),
+            station: station
+          })
+        });
+        
+        if (response.ok) {
+          showMessage('success', `Entry recorded at ${station}`, 'entryMessage');
+          localStorage.setItem('entryStation', station);
+          document.getElementById('entryStation').disabled = true;
+        } else {
+          const data = await response.json();
+          throw new Error(data.message || 'Entry failed');
+        }
+      } catch (error) {
+        console.error('Entry error:', error);
+        showMessage('error', error.message || 'Network error. Please try again.', 'entryMessage');
+      } finally {
+        entryBtn.disabled = false;
+        entryBtn.textContent = originalBtnText;
+      }
+    }
+
+    async function recordExit() {
+      const station = document.getElementById('exitStation').value;
+      if (!station) {
+        showMessage('error', 'Please select exit station', 'exitMessage');
+        return;
+      }
+
+      const entryStation = localStorage.getItem('entryStation');
+      if (!entryStation) {
+        showMessage('error', 'Please record entry first', 'exitMessage');
+        return;
+      }
+
+      const exitBtn = document.querySelector('#exitSection .btn-primary');
+      const originalBtnText = exitBtn.textContent;
+      exitBtn.disabled = true;
+      exitBtn.textContent = 'Processing...';
+
+      try {
+        const response = await fetch('http://localhost:5001/api/users/exit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: localStorage.getItem('email'),
+            station: station,
+            entryStation: entryStation
+          })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Exit failed');
+        }
+
+        updateBalance(data.balance);
+        await loadTransactions();
+        
+        showMessage('success', 
+          `Exit recorded at ${station}. Fare: ₹${data.fare}. New balance: ₹${data.balance}`, 
+          'exitMessage');
+        
+        localStorage.removeItem('entryStation');
+        document.getElementById('entryStation').disabled = false;
+        document.getElementById('entryStation').value = '';
+        document.getElementById('exitStation').value = '';
+
+      } catch (error) {
+        console.error('Exit error:', error);
+        showMessage('error', error.message || 'Exit failed. Please try again.', 'exitMessage');
+      } finally {
+        exitBtn.disabled = false;
+        exitBtn.textContent = originalBtnText;
+      }
+    }
+
+    // Helper function to show messages
+    function showMessage(type, text, elementId) {
+      const element = document.getElementById(elementId);
+      element.textContent = text;
+      element.className = `message ${type}`;
+      element.style.display = 'block';
+      
+      setTimeout(() => {
+        element.style.display = 'none';
+      }, 5000);
+    }
+
+    // Debug function
+    async function debugUserState() {
+      const email = localStorage.getItem('email');
+      if (!email) return console.log('No email in localStorage');
+      
+      try {
+        const response = await fetch(`http://localhost:5001/api/users/${email}`);
+        const data = await response.json();
+        
+        console.log('Current user state:', {
+          balance: data.balance,
+          entryStation: data.entryStation,
+          lastTransaction: data.transactions?.slice(-1)[0],
+          localStorageEntry: localStorage.getItem('entryStation')
+        });
+      } catch (error) {
+        console.error('Debug failed:', error);
+      }
+    }
+  </script>
+</body>
+</html>
